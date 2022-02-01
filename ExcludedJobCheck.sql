@@ -20,7 +20,7 @@ DECLARE
 	(
 		[ID] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
 		[Job_name] [nvarchar](128) NOT NULL,
-		[Active] [bit] NULL
+		[Active] [bit] NULL DEFAULT 1
 	)
 
 	RAISERROR('Table Excluded Jobs created',0,1) WITH NOWAIT
@@ -148,12 +148,13 @@ DECLARE
 	END CATCH
 
 
+IF NOT EXISTS(SELECT name FROM msdb.dbo.sysjobs where name = 'Availability Group Check')
 BEGIN TRY
 
 RAISERROR('Attempting to create SQL Agent Job',0,1) WITH NOWAIT
 
-USE [msdb]
-GO
+USE [msdb];
+
 BEGIN TRANSACTION
 DECLARE @ReturnCode INT
 SELECT @ReturnCode = 0
@@ -213,10 +214,7 @@ GOTO EndSave
 QuitWithRollback:
     IF (@@TRANCOUNT > 0) ROLLBACK TRANSACTION
 EndSave:
-GO
-
 END TRY
 BEGIN CATCH
 	RAISERROR('Creation of SQL Agent Job failed',0,1) WITH NOWAIT
 END CATCH
-
